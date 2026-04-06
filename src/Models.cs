@@ -74,8 +74,8 @@ internal sealed class ChangelogEntry
     public string GetReferenceList()
     {
         return string.Join(", ", _linksByNumber.Values
-            .OrderBy(link => link.Kind)
-            .ThenBy(link => link.Number)
+            .OrderBy(link => link.Number)
+            .ThenBy(link => link.Kind)
             .Select(link => link.ToDisplay()));
     }
 }

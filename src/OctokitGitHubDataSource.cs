@@ -108,14 +108,33 @@ internal sealed class OctokitGitHubDataSource(AppOptions options, string? commit
 
         try
         {
-            var response = await ExecuteMetadataAsync(client => client.Connection.Get<IReadOnlyList<LinkedIssueDto>>(
-                endpoint,
-                new Dictionary<string, string> { ["per_page"] = "100" },
-                "application/vnd.github+json"));
+            var allNumbers = new HashSet<int>();
+            var page = 1;
+            while (true)
+            {
+                var response = await ExecuteMetadataAsync(client => client.Connection.Get<IReadOnlyList<LinkedIssueDto>>(
+                    endpoint,
+                    new Dictionary<string, string>
+                    {
+                        ["per_page"] = "100",
+                        ["page"] = page.ToString()
+                    },
+                    "application/vnd.github+json"));
 
-            var numbers = response.Body
-                .Select(issue => issue.Number)
-                .Distinct()
+                if (response.Body.Count == 0)
+                {
+                    break;
+                }
+
+                foreach (var issue in response.Body)
+                {
+                    allNumbers.Add(issue.Number);
+                }
+
+                page++;
+            }
+
+            var numbers = allNumbers
                 .OrderBy(n => n)
                 .ToList();
 
